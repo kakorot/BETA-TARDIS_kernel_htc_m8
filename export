@@ -14,7 +14,7 @@ else
 fi
 kernel="furnace"
 version="1.0.0"
-rom="htc"
+rom="aosp"
 variant="m8"
 ramdisk=ramdisk
 config="furnace_defconfig"
