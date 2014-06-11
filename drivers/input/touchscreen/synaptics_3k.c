@@ -249,18 +249,26 @@ extern unsigned int get_tamper_sf(void);
 static struct input_dev *smart_cover;
 
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_SWEEP2WAKE
-#define S2W_Y_MAX 2880
-#define S2W_X_MAX 1920
-#define S2W_Y_LIMIT S2W_Y_MAX-180
-#define S2W_X_B1 700
-#define S2W_X_B2 1200
-#define S2W_X_FINAL 400
 #define S2W_PWRKEY_DUR 60
+
+#define S2W_Y_MAX	2880
+#define S2W_X_MAX	1920
+#define S2W_Y_LIMIT	S2W_Y_MAX-180
+#define S2W_X_FINAL	250
+
+#define S2W_X_B0		250
+#define S2W_X_B1		S2W_X_B0+150
+#define S2W_X_B2		S2W_X_B0+450
+
+#define S2W_X_B3		S2W_X_B0+130
+#define S2W_X_B4		S2W_X_MAX-400
+#define S2W_X_B5		S2W_X_MAX-420
 
 static int last_touch_position_x = 0;
 static int last_touch_position_y = 0;
 static bool exec_count = true;
 static bool scr_on_touch = false, barrier[2] = {false, false};
+static bool r_barrier[2] = {false,false};
 static bool scr_suspended = false;
 static int s2w_switch = 1;
 
@@ -292,13 +300,17 @@ static void reset_s2w(void)
 	exec_count = true;
 	barrier[0] = false;
 	barrier[1] = false;
+	r_barrier[0] = false;
+	r_barrier[1] = false;
 	scr_on_touch = false;
 }
 
 static void detect_sweep2wake(int x, int y)
 {
 	int prevx = 0, nextx = 0;
+	int r_prevx = 0, r_nextx = 0;
 
+	// s2s: right->left
 	if (scr_suspended == false && s2w_switch > 0) {
 		scr_on_touch=true;
 		prevx = (S2W_X_MAX - S2W_X_FINAL);
@@ -320,7 +332,35 @@ static void detect_sweep2wake(int x, int y)
 				    (y > S2W_Y_LIMIT)) {
 					if (x < S2W_X_FINAL) {
 						if (exec_count) {
-							pr_debug("s2w: OFF\n");
+							pr_info("s2w: OFF\n");
+							sweep2wake_pwrtrigger();
+							exec_count = false;
+						}
+					}
+				}
+			}
+		}
+		// s2s: left->right
+		r_prevx = S2W_X_B0;
+		r_nextx = S2W_X_B3;
+		if ((r_barrier[0] == true) ||
+		   ((x > r_prevx) &&
+		    (x < r_nextx) &&
+		    (y > S2W_Y_LIMIT))) {
+			r_prevx = r_nextx;
+			r_nextx = S2W_X_B4;
+			r_barrier[0] = true;
+			if ((r_barrier[1] == true) ||
+			   ((x > r_prevx) &&
+			    (x < r_nextx) &&
+			    (y > S2W_Y_LIMIT))) {
+				r_prevx = r_nextx;
+				r_barrier[1] = true;
+				if ((x > r_prevx) &&
+				    (y > S2W_Y_LIMIT)) {
+					if (x > S2W_X_B5) {
+						if (exec_count) {
+							pr_info("s2w: OFF\n");
 							sweep2wake_pwrtrigger();
 							exec_count = false;
 						}
