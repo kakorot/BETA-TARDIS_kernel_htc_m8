@@ -239,7 +239,6 @@ enum {
 
 	WQ_MAX_ACTIVE		= 512,	  
 	WQ_MAX_UNBOUND_PER_CPU	= 4,	  
- workqueues
 	WQ_DFL_ACTIVE		= WQ_MAX_ACTIVE / 2,
 };
 
