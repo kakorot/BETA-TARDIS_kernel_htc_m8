@@ -112,10 +112,7 @@ fi
 
 echo "Making ramdisk..."
 if [ -d $ramdisk ]; then
-	mkbootfs $ramdisk | gzip > tmp.gz
-	gunzip tmp.gz
-	lz4demo -c tmp out/ramdisk.lz4
-	rm -rf tmp tmp.gz
+	mkbootfs $ramdisk | lz4demo -c stdin out/ramdisk.lz4
 else
 	echo "No ramdisk found..."
 	exit 0;
@@ -137,6 +134,7 @@ if [ -f arch/arm/boot/"$kerneltype" ]; then
 	cd ..
 	rm -rf out ozip/system
 	echo "Done..."
+	echo "Output zip: $build/$kernel-$version-$(echo $rom)_$variant.zip"
 	exit 0;
 else
 	echo "No $kerneltype found..."
