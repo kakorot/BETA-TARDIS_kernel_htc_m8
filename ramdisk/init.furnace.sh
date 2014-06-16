@@ -42,7 +42,7 @@ if [ -e /proc/sys/net/ipv4/tcp_congestion_control ]; then
 	echo "westwood" > /proc/sys/net/ipv4/tcp_congestion_control
 	echo "[furnace] TCP set: westwood" | tee /dev/kmsg
 else
-	echo "[furnace] are you network hi" | tee /dev/kmsg
+	echo "[furnace] what" | tee /dev/kmsg
 fi
 
 # Enable powersuspend
@@ -62,4 +62,26 @@ if [ -e /sys/devices/platform/kcal_ctrl.0/kcal ]; then
 	echo "$kcal" > /sys/devices/platform/kcal_ctrl.0/kcal
 	echo "1" > /sys/devices/platform/kcal_ctrl.0/kcal_ctrl
 	echo "[furnace] LCD_KCAL: red=[$sd_r], green=[$sd_g], blue=[$sd_b]" | tee /dev/kmsg
+fi
+
+if [ -e /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq ]; then
+	echo "2265600" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+	echo "2265600" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
+	echo "2265600" > /sys/devices/system/cpu/cpu2/cpufreq/scaling_max_freq
+	echo "2265600" > /sys/devices/system/cpu/cpu3/cpufreq/scaling_max_freq
+	echo "[furnace] Max freq set: 2265600" | tee /dev/kmsg
+else
+	echo "[furnace] Call the police!" | tee /dev/kmsg
+fi
+
+# Init zRam
+if [ -e /dev/block/zram0 ]; then
+	swapoff /dev/block/zram0 >/dev/null 2>&1
+	echo "1" > /sys/block/zram0/reset
+	echo "104857600" > /sys/block/zram0/disksize
+	echo "lz4" > /sys/block/zram0/comp_algorithm
+	mkswap /dev/block/zram0 >/dev/null
+	echo "1" > /sys/block/zram0/initstate
+	chmod 755 /system/xbin/swapon
+	swapon /dev/block/zram0 -p 20 >/dev/null 2>&1
 fi
