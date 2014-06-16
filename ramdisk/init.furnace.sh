@@ -73,15 +73,3 @@ if [ -e /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq ]; then
 else
 	echo "[furnace] Call the police!" | tee /dev/kmsg
 fi
-
-# Init zRam
-if [ -e /dev/block/zram0 ]; then
-	swapoff /dev/block/zram0 >/dev/null 2>&1
-	echo "1" > /sys/block/zram0/reset
-	echo "104857600" > /sys/block/zram0/disksize
-	echo "lz4" > /sys/block/zram0/comp_algorithm
-	mkswap /dev/block/zram0 >/dev/null
-	echo "1" > /sys/block/zram0/initstate
-	chmod 755 /system/xbin/swapon
-	swapon /dev/block/zram0 -p 20 >/dev/null 2>&1
-fi
