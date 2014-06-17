@@ -42,10 +42,13 @@
 #elif defined(CONFIG_HAS_EARLYSUSPEND)
 #include <linux/earlysuspend.h>
 #endif
+#include <linux/input/sweep2dim.h>
 
 #if defined(CONFIG_SYNC_TOUCH_STATUS)
 #include <linux/CwMcuSensor.h>
 #endif
+
+#define furntag "[furnace] "
 
 #define MAX_BUF_SIZE	256
 #define VKEY_VER_CODE	"0x01"
@@ -248,6 +251,15 @@ extern unsigned int get_tamper_sf(void);
 
 static struct input_dev *smart_cover;
 
+int s2d_enabled = 0;
+module_param(s2d_enabled, int, 0664);
+int lut_trigger = 0;
+module_param(lut_trigger, int, 0664);
+int down_kcal = 50;
+module_param(down_kcal, int, 0664);
+int up_kcal = 50;
+module_param(up_kcal, int, 0664);
+
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_SWEEP2WAKE
 #define S2W_PWRKEY_DUR 60
 
@@ -310,8 +322,11 @@ static void detect_sweep2wake(int x, int y)
 	int prevx = 0, nextx = 0;
 	int r_prevx = 0, r_nextx = 0;
 
+	if ((s2w_switch > 0) && (s2d_enabled == 1))
+		s2d_enabled = 0;
+
 	// s2s: right->left
-	if (scr_suspended == false && s2w_switch > 0) {
+	if (scr_suspended == false && s2w_switch > 0 && s2d_enabled == 0) {
 		scr_on_touch=true;
 		prevx = (S2W_X_MAX - S2W_X_FINAL);
 		nextx = S2W_X_B2;
@@ -362,6 +377,64 @@ static void detect_sweep2wake(int x, int y)
 						if (exec_count) {
 							pr_info("s2w: OFF\n");
 							sweep2wake_pwrtrigger();
+							exec_count = false;
+						}
+					}
+				}
+			}
+		}
+	// s2d: right->left
+	} else if (scr_suspended == false && s2d_enabled == 1) {
+		scr_on_touch=true;
+		prevx = (S2W_X_MAX - S2W_X_FINAL);
+		nextx = S2W_X_B2;
+		if ((barrier[0] == true) ||
+		   ((x < prevx) &&
+		    (x > nextx) &&
+		    (y > S2W_Y_LIMIT))) {
+			prevx = nextx;
+			nextx = S2W_X_B1;
+			barrier[0] = true;
+			if ((barrier[1] == true) ||
+			   ((x < prevx) &&
+			    (x > nextx) &&
+			    (y > S2W_Y_LIMIT))) {
+				prevx = nextx;
+				barrier[1] = true;
+				if ((x < prevx) &&
+				    (y > S2W_Y_LIMIT)) {
+					if (x < S2W_X_FINAL) {
+						if (exec_count) {
+							pr_info(furntag"dimmer!\n");
+							update_preset_lcdc_lut_s2d(1);
+							exec_count = false;
+						}
+					}
+				}
+			}
+		}
+		// s2d: left->right
+		r_prevx = S2W_X_B0;
+		r_nextx = S2W_X_B3;
+		if ((r_barrier[0] == true) ||
+		   ((x > r_prevx) &&
+		    (x < r_nextx) &&
+		    (y > S2W_Y_LIMIT))) {
+			r_prevx = r_nextx;
+			r_nextx = S2W_X_B4;
+			r_barrier[0] = true;
+			if ((r_barrier[1] == true) ||
+			   ((x > r_prevx) &&
+			    (x < r_nextx) &&
+			    (y > S2W_Y_LIMIT))) {
+				r_prevx = r_nextx;
+				r_barrier[1] = true;
+				if ((x > r_prevx) &&
+				    (y > S2W_Y_LIMIT)) {
+					if (x > S2W_X_B5) {
+						if (exec_count) {
+							pr_info(furntag"brighter!\n");
+							update_preset_lcdc_lut_s2d(2);
 							exec_count = false;
 						}
 					}
@@ -2338,7 +2411,7 @@ static void synaptics_ts_finger_func(struct synaptics_ts_data *ts)
 		}
 
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_SWEEP2WAKE
-		if ((((ts->finger_count > 0)?1:0) == 0) && (s2w_switch > 0)) {
+		if ((((ts->finger_count > 0)?1:0) == 0) && (s2w_switch > 0 || s2d_enabled == 1)) {
 			reset_s2w();
 		}
 #endif		
