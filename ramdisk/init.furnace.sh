@@ -27,6 +27,18 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Prep for dt2w, enable s2s by default
+if [ -e /sys/android_touch/wake_gestures ]; then
+	echo "1" > /sys/android_touch/wake_gestures
+	echo "0" > /sys/android_touch/vib_strength
+	echo "1" > /sys/android_touch/sweep2wake
+	echo "80" > /sys/module/synaptics_3k/down_kcal
+	echo "80" > /sys/module/synaptics_3k/up_kcal
+	echo "[furnace] Gestures configured!" | tee /dev/kmsg
+else
+	echo "[furnace] sweep2wake not found" | tee /dev/kmsg
+fi
+
 # Disable MPD, enable intelliplug
 if [ -e /sys/module/intelli_plug/parameters/intelli_plug_active ]; then
 	stop mpdecision
