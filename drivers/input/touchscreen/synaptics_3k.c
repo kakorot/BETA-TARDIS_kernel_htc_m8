@@ -305,7 +305,7 @@ static bool dt2w_switch_changed = false;
 static int gestures_switch = 0, gestures_switch_temp = 0;
 static bool gestures_switch_changed = false;
 static int pocket_detect = 0;
-static int vib_strength = 20;
+static int vib_strength = 0;
 int cam_switch = 1;
 static int boot_mode = 1;
 static unsigned long boot_mode_init;
@@ -341,7 +341,7 @@ static void sweep2wake_presspwr(struct work_struct *sweep2wake_presspwr_work)
 }
 static DECLARE_WORK(sweep2wake_presspwr_work, sweep2wake_presspwr);
 
-static void sweep2wake_pwrtrigger(int wake)
+void sweep2wake_pwrtrigger(int wake)
 {
         pwrtrigger_time[1] = pwrtrigger_time[0];
         pwrtrigger_time[0] = jiffies;	
@@ -2191,11 +2191,13 @@ static int synaptics_touch_sysfs_init(void)
 		sysfs_create_file(android_touch_kobj, &dev_attr_sr_en.attr) ||
 		sysfs_create_file(android_touch_kobj, &dev_attr_cover.attr)
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_WAKE_GESTURES
+#if 0
 		|| sysfs_create_file(android_touch_kobj, &dev_attr_doubletap2wake.attr) ||
 		sysfs_create_file(android_touch_kobj, &dev_attr_wake_gestures.attr) ||
 		sysfs_create_file(android_touch_kobj, &dev_attr_vib_strength.attr) ||
 		sysfs_create_file(android_touch_kobj, &dev_attr_pocket_detect.attr) ||
 		sysfs_create_file(android_touch_kobj, &dev_attr_camera_gesture.attr)
+#endif
 #endif
 #ifdef SYN_WIRELESS_DEBUG
 		|| sysfs_create_file(android_touch_kobj, &dev_attr_enabled.attr)
