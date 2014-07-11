@@ -31,7 +31,7 @@ extern struct kcal_data kcal_value;
 #endif
 
 extern int lut_trigger, down_kcal, up_kcal;
-extern void sweep2wake_pwrtrigger(int wake);
+extern void sweep2wake_pwrtrigger(void);
 
 struct mdp_csc_cfg mdp_csc_convert[MDSS_MDP_MAX_CSC] = {
 	[MDSS_MDP_CSC_RGB2RGB] = {
@@ -1456,7 +1456,7 @@ int update_preset_lcdc_lut_s2d(int lut_trigger)
 			g_kcal_r = 255;
 			g_kcal_g = 255;
 			g_kcal_b = 255;
-			sweep2wake_pwrtrigger(1);
+			sweep2wake_pwrtrigger();
 		}
 	}
 
