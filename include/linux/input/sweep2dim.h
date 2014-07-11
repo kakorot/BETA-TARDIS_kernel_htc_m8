@@ -25,6 +25,6 @@
 extern int s2d_enabled, lut_trigger;
 extern int down_kcal, up_kcal;
 extern int update_preset_lcdc_lut_s2d(int lut_trigger);
-extern void sweep2wake_pwrtrigger(int wake);
+extern void sweep2wake_pwrtrigger(void);
 
 #endif	/* _LINUX_SWEEP2WAKE_H */
