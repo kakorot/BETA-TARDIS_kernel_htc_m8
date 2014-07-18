@@ -29,9 +29,9 @@
 
 # Sweep2Dim default
 if [ -e /sys/android_touch/sweep2wake ]; then
-	if [ -e /sys/module/synaptics_3k/parameters/s2d_enabled ]; then
+	if [ -e /sys/android_touch/sweep2dim ]; then
 		echo "0" > /sys/android_touch/sweep2wake
-		echo "1" > /sys/module/synaptics_3k/parameters/s2d_enabled
+		echo "1" > /sys/android_touch/sweep2dim
 		echo "73" > /sys/module/synaptics_3k/parameters/down_kcal
 		echo "73" > /sys/module/synaptics_3k/parameters/up_kcal
 		echo "[furnace] sweep2dim configured!" | tee /dev/kmsg
