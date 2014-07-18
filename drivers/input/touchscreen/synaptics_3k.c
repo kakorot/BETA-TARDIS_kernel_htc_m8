@@ -253,8 +253,6 @@ static struct input_dev *smart_cover;
 
 int s2d_enabled = 0;
 module_param(s2d_enabled, int, 0664);
-int lut_trigger = 0;
-module_param(lut_trigger, int, 0664);
 int down_kcal = 50;
 module_param(down_kcal, int, 0664);
 int up_kcal = 50;
@@ -407,7 +405,7 @@ static void detect_sweep2wake(int x, int y)
 					if (x < S2W_X_FINAL) {
 						if (exec_count) {
 							pr_info(furntag"dimmer!\n");
-							update_preset_lcdc_lut_s2d(1);
+							kcal_send_s2d(1);
 							exec_count = false;
 						}
 					}
@@ -435,7 +433,7 @@ static void detect_sweep2wake(int x, int y)
 					if (x > S2W_X_B5) {
 						if (exec_count) {
 							pr_info(furntag"brighter!\n");
-							update_preset_lcdc_lut_s2d(2);
+							kcal_send_s2d(2);
 							exec_count = false;
 						}
 					}
