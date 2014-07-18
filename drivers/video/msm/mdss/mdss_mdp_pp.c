@@ -1394,14 +1394,10 @@ void mdss_mdp_pp_argc(void)
 	pr_info(">>>>> %s \n", __func__);
 }
 
-
-#define NUM_QLUT 256
-#define MAX_KCAL_V (NUM_QLUT-1)
-
 #define SCALED_BY_KCAL(rgb, kcal) \
-	((rgb * kcal * NUM_QLUT ) / (MAX_KCAL_V * MAX_KCAL_V))
+	((rgb * kcal * 256 ) / (65025))
 
-void mdss_mdp_pp_argc_kcal(int kr, int kg, int kb)
+int mdss_mdp_pp_argc_kcal(int kr, int kg, int kb)
 {
 	int i;
 	int disp_num = 0;
@@ -1429,15 +1425,17 @@ void mdss_mdp_pp_argc_kcal(int kr, int kg, int kb)
 	mdss_pp_res->pp_disp_flags[disp_num] |= PP_FLAGS_DIRTY_PGC;
 
 	pr_info(">>>>> %s \n", __func__);
+
+	return 0;
 }
 
 int update_preset_lcdc_lut(void)
 {
-	int ret = 0;
+	int ret;
 
 	pr_info("update_preset_lcdc_lut red=[%d], green=[%d], blue=[%d]\n", g_kcal_r, g_kcal_g, g_kcal_b);
 
-	mdss_mdp_pp_argc_kcal(g_kcal_r,g_kcal_g,g_kcal_b);
+	ret = mdss_mdp_pp_argc_kcal(g_kcal_r,g_kcal_g,g_kcal_b);
 
 	if (ret)
 		pr_err("%s: failed to set lut! %d\n", __func__, ret);
