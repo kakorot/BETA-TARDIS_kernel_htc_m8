@@ -252,7 +252,6 @@ extern unsigned int get_tamper_sf(void);
 static struct input_dev *smart_cover;
 
 int s2d_enabled = 0;
-module_param(s2d_enabled, int, 0664);
 int down_kcal = 50;
 module_param(down_kcal, int, 0664);
 int up_kcal = 50;
@@ -1855,7 +1854,30 @@ static ssize_t synaptics_sweep2wake_dump(struct device *dev,
 
 static DEVICE_ATTR(sweep2wake, 0666,
 	synaptics_sweep2wake_show, synaptics_sweep2wake_dump);
-#endif	
+#endif
+
+static ssize_t sweep2dim_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	size_t count = 0;
+
+	count += sprintf(buf, "%d\n", s2d_enabled);
+
+	return count;
+}
+
+static ssize_t sweep2dim_dump(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	if (buf[0] >= '0' && buf[0] <= '1' && buf[1] == '\n')
+                if (s2d_enabled != buf[0] - '0')
+		        s2d_enabled = buf[0] - '0';
+
+	return count;
+}
+
+static DEVICE_ATTR(sweep2dim, (S_IWUSR|S_IRUGO),
+	sweep2dim_show, sweep2dim_dump);
 	
 enum SR_REG_STATE{
 	ALLOCATE_DEV_FAIL = -2,
@@ -1981,7 +2003,13 @@ static int synaptics_touch_sysfs_init(void)
 		printk(KERN_ERR "%s: sysfs_create_file failed\n", __func__);
 		return ret;
 	}
-#endif			
+#endif
+
+	ret = sysfs_create_file(android_touch_kobj, &dev_attr_sweep2dim.attr);
+	if (ret) {
+		printk(KERN_ERR "%s: sysfs_create_file failed for sweep2dim\n", __func__);
+		return ret;
+	}
 			
 #ifdef SYN_WIRELESS_DEBUG
 	ret= gpio_request(ts->gpio_irq, "synaptics_attn");
