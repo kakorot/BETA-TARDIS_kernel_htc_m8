@@ -25,7 +25,7 @@ static ssize_t blx_charginglimit_read(struct device * dev, struct device_attribu
 
 static ssize_t blx_charginglimit_write(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
-    unsigned int data, i;
+    unsigned int data;
 
     if(sscanf(buf, "%u\n", &data) == 1) 
 	{
