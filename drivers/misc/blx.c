@@ -14,6 +14,7 @@
 #include <linux/blx.h>
 #include <linux/stat.h>
 #include <linux/export.h>
+#include <linux/input/sweep2dim.h>
 
 static int charging_limit = MAX_CHARGINGLIMIT;
 
@@ -24,7 +25,7 @@ static ssize_t blx_charginglimit_read(struct device * dev, struct device_attribu
 
 static ssize_t blx_charginglimit_write(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
-    unsigned int data;
+    unsigned int data, i;
 
     if(sscanf(buf, "%u\n", &data) == 1) 
 	{
@@ -33,6 +34,7 @@ static ssize_t blx_charginglimit_write(struct device * dev, struct device_attrib
 		    charging_limit = data;
 
 		    pr_info("BLX charging limit set to %u\n", charging_limit);
+		    sweep2wake_pwrtrigger();
 		}
 	    else
 		{
